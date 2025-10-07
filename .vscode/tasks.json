@@ -49,14 +49,16 @@
             "command": [
                     "outputElfFilename='${command:cmsis-csolution.getBinaryFile}';",
                     "cp \"${outputElfFilename/%???/bin}\" '${config:alif.setools.root}/build/images/alif-img.bin';",
-                    "cp './.alif/${command:cmsis-csolution.getProcessorName}_cfg.json' '${config:alif.setools.root}/alif-img.json';"
+                    "cp './.alif/${command:cmsis-csolution.getProcessorName}_cfg.json' '${config:alif.setools.root}/alif-img.json';",
+                    "cp './.alif/app-device-config-no-hfxo.json' '${config:alif.setools.root}/app-device-config-no-hfxo.json';"
                 ],
             "windows": {
                 "command": [
                     "$outputElfFilename='${command:cmsis-csolution.getBinaryFile}';",
                     "$outputBinFilename=${outputElfFilename}.Substring(0, $outputElfFilename.Length -3) + 'bin';",
                     "cp \"$outputBinFilename\" '${config:alif.setools.root}/build/images/alif-img.bin';",
-                    "cp './.alif/${command:cmsis-csolution.getProcessorName}_cfg.json' '${config:alif.setools.root}/alif-img.json';"
+                    "cp './.alif/${command:cmsis-csolution.getProcessorName}_cfg.json' '${config:alif.setools.root}/alif-img.json';",
+                    "cp './.alif/app-device-config-no-hfxo.json' '${config:alif.setools.root}/app-device-config-no-hfxo.json';"
                 ]
             },
             "problemMatcher": []

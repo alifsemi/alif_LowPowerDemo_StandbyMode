@@ -1,7 +1,8 @@
 out/
 tmp/
 *.cbuild-idx.yml
-*.cbuild-set.yml
+*.cbuild-pack.yml
 *.cbuild-run.yml
 *.cbuild.yml
 *.clangd
+RTE_Components.h

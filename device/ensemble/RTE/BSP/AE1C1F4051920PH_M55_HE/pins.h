@@ -176,7 +176,7 @@ const struct pinconf board_pinconf[] = {
 
     /* P4_3 on pin F6. Functions: [0]: GPIO4_3, [1]: >>>JTAG0_TRACECLK<<<, [2]: LPI2S_SDI_B, [3]: UT1_T1_A, [4]: LPCAM_D3_A, [5]: SD_D3_A, [6]: CMP0_OUT_B, [7]: CS_MWS_ID0 */
     /* Selected: JTAG0_TRACECLK */
-    {PORT_4, PIN_3, PINMUX_ALTERNATE_FUNCTION_0, PADCTRL_OUTPUT_DRIVE_STRENGTH_4MA},
+    {PORT_4, PIN_3, PINMUX_ALTERNATE_FUNCTION_1, PADCTRL_OUTPUT_DRIVE_STRENGTH_4MA},
 
     /* P4_4 on pin A6. Functions: [0]: GPIO4_4, [1]: >>>JTAG0_TDATA0<<<, [2]: LPI2S_SDO_B, [3]: LPSPI_SCLK_B, [4]: UT2_T0_A, [5]: LPCAM_D4_A, [6]: SD_D4_A, [7]: CS_MWS_ID1 */
     /* Selected:  JTAG0_TDATA0 */
@@ -259,12 +259,12 @@ const struct pinconf board_pinconf[] = {
     {PORT_6, PIN_7, PINMUX_ALTERNATE_FUNCTION_0, PADCTRL_OUTPUT_DRIVE_STRENGTH_4MA},
 
     /* P7_0 on pin D9. Functions: [0]: GPIO7_0, [1]: OSPI0_SCLK_C, [2]: LPUART_RX_B, [3]: SPI2_MISO_B, [4]: >>>I2C0_SDA_C<<<, [5]: LPCAM_D0_B, [6]: CDC_D16_A, [7]: BLE_DBG24 */
-    /* Selected: I2C0_SDA_C */
-    {PORT_7, PIN_0, PINMUX_ALTERNATE_FUNCTION_4, PADCTRL_READ_ENABLE},
+    /* Selected: GPIO7_0 */
+    {PORT_7, PIN_0, PINMUX_ALTERNATE_FUNCTION_0, PADCTRL_OUTPUT_DRIVE_STRENGTH_4MA},
 
     /* P7_1 on pin A5. Functions: [0]: GPIO7_1, [1]: OSPI0_SCLKN_C, [2]: LPUART_TX_B, [3]: SPI2_MOSI_B, [4]: >>>I2C0_SCL_C<<<, [5]: LPCAM_D1_B, [6]: CDC_D17_A, [7]: BLE_DBG25 */
-    /* Selected: I2C0_SCL_C */
-    {PORT_7, PIN_1, PINMUX_ALTERNATE_FUNCTION_4, PADCTRL_READ_ENABLE},
+    /* Selected: LPUART_TX_B */
+    {PORT_7, PIN_1, PINMUX_ALTERNATE_FUNCTION_2, PADCTRL_OUTPUT_DRIVE_STRENGTH_4MA},
 
     /* P7_2 on pin A4. Functions: [0]: GPIO7_2, [1]: OSPI0_SS0_C, [2]: LPUART_CTS_B, [3]: SPI2_SCLK_B, [4]: >>>I2C1_SDA_C<<<, [5]: LPCAM_D2_B, [6]: CDC_D18_A, [7]: BLE_DBG26 */
     /* Selected: I2C1_SDA_C */
@@ -323,18 +323,16 @@ const struct pinconf board_pinconf[] = {
     {PORT_8, PIN_7, PINMUX_ALTERNATE_FUNCTION_0, PADCTRL_OUTPUT_DRIVE_STRENGTH_4MA},
 
     /* P9_0 on pin M2. Functions: [0]: GPIO9_0, [1]: LPUART_RX_C, [2]: LPI2S_SDI_C, [3]: SPI1_SS1_C, [4]: FAULT0_C, [5]: LPCAM_D0_C, [6]: SD_D0_C */
-    /* Selected:  LPI2S_SDI_C */
-    {PORT_9, PIN_0, PINMUX_ALTERNATE_FUNCTION_2, PADCTRL_READ_ENABLE | PADCTRL_DRIVER_DISABLED_BUS_REPEATER | PADCTRL_OUTPUT_DRIVE_STRENGTH_4MA},
+    /* Selected:  GPIO9_0 */
+    {PORT_9, PIN_0, PINMUX_ALTERNATE_FUNCTION_0, PADCTRL_OUTPUT_DRIVE_STRENGTH_4MA},
 
-    /* P9_1 on pin N2. Functions: [0]: GPIO9_1, [1]: >>>LPUART_TX_C<<<, [2]: LPI2S_SDO_C, [3]:
-     * SPI1_SS2_C,[4]: FAULT1_C, [5]: LPCAM_D1_C, [6]: SD_D1_C
-     */
-    /* Selected:  LPUART_TX_C */
-    {PORT_9, PIN_1, PINMUX_ALTERNATE_FUNCTION_1, PADCTRL_OUTPUT_DRIVE_STRENGTH_2MA},
+    /* P9_1 on pin N2. Functions: [0]: GPIO9_1, [1]: >>>LPUART_TX_C<<<, [2]: LPI2S_SDO_C, [3]: SPI1_SS2_C,[4]: FAULT1_C, [5]: LPCAM_D1_C, [6]: SD_D1_C */
+    /* Selected:  GPIO9_1 */
+    {PORT_9, PIN_1, PINMUX_ALTERNATE_FUNCTION_0, PADCTRL_OUTPUT_DRIVE_STRENGTH_4MA},
 
     /* P9_2 on pin M3. Functions: [0]: GPIO9_2, [1]: LPUART_RTS_C, [2]: >>>LPI2S_SCLK_C<<<, [3]: SPI2_MISO_C, [4]: FAULT2_C, [5]: LPCAM_D2_C, [6]: SD_D2_C */
-    /* Selected: LPI2S_SCLK_C */
-    {PORT_9, PIN_2, PINMUX_ALTERNATE_FUNCTION_2, PADCTRL_DRIVER_DISABLED_BUS_REPEATER | PADCTRL_OUTPUT_DRIVE_STRENGTH_4MA},
+    /* Selected: GPIO9_2 */
+    {PORT_9, PIN_2, PINMUX_ALTERNATE_FUNCTION_0, PADCTRL_OUTPUT_DRIVE_STRENGTH_4MA},
 
     /* P9_3 on pin H5. Functions: [0]: >>>GPIO9_3<<<, [1]: LPUART_CTS_C, [2]: LPI2S_WS_C, [3]: SPI2_MOSI_C, [4]: FAULT3_C, [5]: LPCAM_D3_C, [6]: SD_D3_C */
     /* Selected: GPIO9_3  */
