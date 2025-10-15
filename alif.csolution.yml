@@ -70,6 +70,12 @@ solution:
     - _UNICODE
 
   projects:
+    - project: app_he/app_he.cproject.yml
+      for-context:
+        - +E8-HE
+    - project: app_hp/app_hp.cproject.yml
+      for-context:
+        - +E8-HP
     - project: blinky/blinky.cproject.yml
     - project: hello/hello.cproject.yml
     - project: hello_rtt/hello_rtt.cproject.yml
