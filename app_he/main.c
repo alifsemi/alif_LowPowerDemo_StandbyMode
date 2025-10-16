@@ -87,6 +87,7 @@ static void reset_hp()
 static void boot_from_por()
 {
     printf("RTSS-HE first boot\r\n\n");
+    delay_ms(100);
 
     printf("Wake up period in milliseconds (e.g. 10ms to 10000ms)\r\n");
     printf("> 1000");
@@ -102,9 +103,16 @@ static void boot_from_por()
     uint32_t ret, response;
     se_services_port_init();
 
+    /* clear debug and systop request via SERVICES */
+    host_cpu_clus_pwr_req_t cluster_pwr_req = {0};
+    bsys_pwr_req_t bsys_pwr_req = {0};
+    ret = SERVICES_corstone_standby_mode(se_services_s_handle, cluster_pwr_req, bsys_pwr_req, &response);
+    if (ret || response) while(1);
+
     /* Request the SECENC to power itself down */
     ret = SERVICES_power_se_sleep_req(se_services_s_handle, 0, &response);
     if (ret || response) while(1);
+    delay_ms(10);
 
     /* turn off DEBUG and SYSTOP */
     *(volatile uint32_t*)0x1A010400 = 0;
@@ -127,7 +135,7 @@ static void boot_from_por()
     /* adjust the internal dc-dc output voltage */
     uint32_t reg_data, dcdc_trim;
     reg_data = ANA->DCDC_REG1;
-    dcdc_trim = ((reg_data >> 3) & 63U) - 15;
+    dcdc_trim = ((reg_data >> 3) & 63U) - 12;
     reg_data &= ~(63U << 3);
     reg_data |= (dcdc_trim << 3);
     ANA->DCDC_REG1 = reg_data;

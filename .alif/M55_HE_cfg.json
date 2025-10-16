@@ -14,15 +14,6 @@
     "flags": ["boot","load"],
     "signed": false
   },
-  "HE_MRAM": {
-    "disabled" : true,
-    "binary": "M55_HE_img.bin",
-    "mramAddress": "0x80000000",
-    "version": "1.0.0",
-    "cpu_id": "M55_HE",
-    "flags": ["boot"],
-    "signed": false
-  },
   "HP_MRAM": {
     "disabled" : false,
     "binary": "M55_HP_img.bin",

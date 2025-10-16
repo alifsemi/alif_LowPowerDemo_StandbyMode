@@ -135,8 +135,8 @@ SECTIONS
     __HeapLimit = .;
   } > DTCM
 
-  .stack (NOLOAD) : ALIGN(8)
-  /* .stack (ORIGIN(DTCM) + LENGTH(DTCM) - __STACK_SIZE) (NOLOAD) : ALIGN(8) */
+  /* .stack (NOLOAD) : ALIGN(8) */
+  .stack (ORIGIN(DTCM) + LENGTH(DTCM) - __STACK_SIZE) (NOLOAD) : ALIGN(8)
   {
     __StackLimit = .;
     . = . + __STACK_SIZE;
