@@ -19,3 +19,6 @@ layer:
       for-context:
         - +E8-HE
         - +E8-HP
+    - component: AlifSemiconductor::BSP:DevKit Config&DevKit-e1c
+      for-context:
+        - +E1C-HE

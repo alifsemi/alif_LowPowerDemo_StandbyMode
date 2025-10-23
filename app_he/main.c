@@ -80,7 +80,7 @@ void MHU_RTSS_S_RX_IRQHandler()
 static void reset_hp()
 {
     *(volatile uint32_t*)0x1A010310 = 3U;
-    while(*(volatile uint32_t*)0x1A010314 != 4) __WFI();
+    while(*(volatile uint32_t*)0x1A010314 != 4);
     *(volatile uint32_t*)0x1A010310 = 1U;
 }
 
@@ -103,10 +103,22 @@ static void boot_from_por()
     uint32_t ret, response;
     se_services_port_init();
 
-    /* clear debug and systop request via SERVICES */
-    host_cpu_clus_pwr_req_t cluster_pwr_req = {0};
-    bsys_pwr_req_t bsys_pwr_req = {0};
-    ret = SERVICES_corstone_standby_mode(se_services_s_handle, cluster_pwr_req, bsys_pwr_req, &response);
+    run_profile_t runp = {0};
+    runp.aon_clk_src = CLK_SRC_LFXO;        // change to LFRC if LFXO is not present
+    runp.run_clk_src = CLK_SRC_HFRC;
+    runp.cpu_clk_freq = CLOCK_FREQUENCY_76_8_RC_MHZ;
+    runp.scaled_clk_freq = SCALED_FREQ_RC_STDBY_0_6_MHZ;
+    runp.dcdc_mode = DCDC_MODE_PFM_FORCED;  // PFM is used at low loads
+    runp.dcdc_voltage = 750;
+    runp.memory_blocks = MRAM_MASK | BACKUP4K_MASK;
+#if defined(M55_HE)
+    runp.memory_blocks |= SRAM4_1_MASK | SRAM4_2_MASK | SRAM5_1_MASK | SRAM5_2_MASK;
+#if defined(M55_HE_E1C)
+    runp.memory_blocks |= SRAM4_3_MASK | SRAM5_3_MASK;
+#endif
+#endif
+    runp.vdd_ioflex_3V3 = IOFLEX_LEVEL_1V8;
+    ret = SERVICES_set_run_cfg(se_services_s_handle, &runp, &response);
     if (ret || response) while(1);
 
     /* Request the SECENC to power itself down */
@@ -116,34 +128,6 @@ static void boot_from_por()
 
     /* turn off DEBUG and SYSTOP */
     *(volatile uint32_t*)0x1A010400 = 0;
-
-    /* Flex GPIO are typically 1.8V */
-    VBAT->GPIO_CTRL = 0x11;
-
-    /* Retain HE-TCM and 4kB Backup SRAM */
-    VBAT->RET_CTRL = 0x3FF00;
-
-    /* Retain HE-TCM and 4kB and SRAM0 */
-    // VBAT->RET_CTRL = 0x30000;   
-
-    /* Retain HE-TCM and 4kB and SRAM0+1 */
-    // VBAT->RET_CTRL = 0x00000;
-
-    /* Backup HE's VTOR value to VBAT */
-    *(volatile uint32_t *)(0x1A60A024UL) = SCB->VTOR;
-
-    /* adjust the internal dc-dc output voltage */
-    uint32_t reg_data, dcdc_trim;
-    reg_data = ANA->DCDC_REG1;
-    dcdc_trim = ((reg_data >> 3) & 63U) - 12;
-    reg_data &= ~(63U << 3);
-    reg_data |= (dcdc_trim << 3);
-    ANA->DCDC_REG1 = reg_data;
-
-    /* adjust other low-level settings */
-    ANA->DCDC_REG2 |= (1U << 23);       // put DCDC in PFM mode
-    ANA->VBAT_ANA_REG1 |= (15U << 8);   // enable RET LDOs
-    ANA->VBAT_ANA_REG2 |=  (5U << 19);  // select 600kHz standby mode clock
 
     /* Clear the Backup RAM */
     uint32_t bk_data = 0;
@@ -208,6 +192,7 @@ static void execute_while1()
     while(ms_ticks < active_ms);
 }
 
+#ifndef M55_HE_E1C
 static void execute_while1_rtsshp()
 {
     uint32_t cycle_cnt;
@@ -247,6 +232,7 @@ static void execute_while1_rtsshp()
     /* put DCDC in PFM mode after SYSTOP and HP are off */
     ANA->DCDC_REG2 |= (1U << 23);
 }
+#endif
 
 static bool PrintPendingIRQ()
 {
@@ -305,7 +291,9 @@ int main (void)
     if (wake_event) {
         boot_from_standby();
         execute_while1();
+#ifndef M55_HE_E1C
         execute_while1_rtsshp();
+#endif
         enter_standby();
     }
     else {

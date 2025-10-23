@@ -53,9 +53,6 @@ static void boot_from_por()
 {
     printf("RTSS-HP first boot\r\n\n");
     delay_ms(100);
-
-    /* Backup HP's VTOR value to AON */
-    *(volatile uint32_t*)(0x1A605014UL) = SCB->VTOR;
 }
 
 static void boot_from_standby()
