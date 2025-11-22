@@ -1,7 +1,7 @@
 # About: Multicore Demo
-Ensembe dual-core demo for STANDBY Mode added:
-    - RTSS-HE logs are on LP-UART (P7_6 and P7_7)
-    - RTSS-HP logs are on UART4 (P9_1 and P9_2)
+Ensembe dual-core demo for STANDBY Mode.
+  - RTSS-HE logs are on LP-UART (RX P7_6 and TX P7_7)
+  - RTSS-HP logs are on UART4 (RX P12_1 and TX P12_2)
 
 At first power-on, both cores are booted by the Secure Enclave. Since
 the HP core detects no wake events, it powers down immediately. The HE
@@ -31,13 +31,16 @@ the application.
 
 After the binaries are built, switch to the Explorer View (CTRL+SHIFT+E).
 The binaries will be located in the out directory, for example:
+```
     out/
         app_he/E7-HE/release/app_he.bin
         app_hp/E7-HP/release/app_hp.bin
+```
 
 # Programming the binaries
-Use the below json to configure your ATOC.
+Use the below json to configure your ATOC. Copy the binaries to the app-release-exec/build/images folder and proceed with the usual steps of generating the ATOC and writing to MRAM.
 
+```
 {
   "DEVICE": {
     "disabled" : false,
@@ -64,3 +67,4 @@ Use the below json to configure your ATOC.
     "signed": false
   }
 }
+```
