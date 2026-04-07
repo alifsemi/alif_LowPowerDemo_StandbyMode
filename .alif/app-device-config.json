@@ -5,7 +5,7 @@
     "external_clock_sources": [
       {
         "id": "OSC_HFXO",
-        "enabled": false,
+        "enabled": true,
         "frequency": 38400000
       },
       {

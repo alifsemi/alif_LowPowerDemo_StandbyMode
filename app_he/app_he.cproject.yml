@@ -26,7 +26,7 @@ project:
     - layer: ../device/ensemble/alif-ensemble.clayer.yml
 
   packs:
-    - pack: AlifSemiconductor::Ensemble@^2.0.2
+    - pack: AlifSemiconductor::Ensemble@2.0.2
     - pack: ARM::CMSIS-Compiler@^2.0.0
     - pack: ARM::CMSIS
   components:
