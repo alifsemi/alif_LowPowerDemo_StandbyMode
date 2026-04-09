@@ -52,10 +52,12 @@ Active Target. If you are planning to run this demo on the Devkit-e7, then you
 will want to build binaries for the E7-HE and E7-HP. Otherwise, for the Devkit-e8,
 then build binaries for the E8-HE and E8-HP. Use this Manage Solution tab to
 switch between Target Types and use the hammer icon in the CMSIS View to build
-the application.
+the application. 
 
-After the binaries are built, switch to the Explorer View (CTRL+SHIFT+E).
-The binaries will be located in the out directory, for example:
+After the binaries are built, switch to the Explorer View (CTRL+SHIFT+E). For the
+dual-core application demos, both binaries for HP and HE should be built prior to
+programming the binaries. For a single-core application, only one of the binaries
+is needed. The binaries will be located in the out directory, for example:
 ```
 .
 ├── ...
@@ -82,12 +84,16 @@ The binaries will be located in the out directory, for example:
 
 
 # Debugging the binaries
-- Switch to the Debug and Run view (CTRL+SHIFT+D) and press F5
-- **TIP:** You may want to use SE tools integration to install the CPU stubs
+- Use the SE tools integration to install app-cpu-stubs-hfrc.json
+- Switch to the Run and Debug view (CTRL+SHIFT+D)
+- Choose "Debug" from the dropdown menu
+- press F5 to start the debug session
 
 
 # Programming the binaries
-Use the below json to configure your ATOC. Copy the binaries to the app-release-exec/build/images folder and proceed with the usual steps of generating the ATOC and writing to MRAM.
+Use the SE tools integration to install M55_HP_HE_cfg.json. Do this by executing the task "Alif: Program with Security Toolkit (dual core)". If the target is not responding, it may help to execute the task "Alif: put chip in maintenance mode".
+
+To program the binaries manually, use the below json to configure your ATOC. Copy the binaries to the app-release-exec/build/images folder and proceed with the usual steps of generating the ATOC and writing to MRAM.
 
 ```
 {
@@ -100,6 +106,7 @@ Use the below json to configure your ATOC. Copy the binaries to the app-release-
   "HE_TCM": {
     "disabled" : false,
     "binary": "M55_HE_img.bin",
+    "mramAddress": "0x80000000",
     "loadAddress": "0x58000000",
     "version": "1.0.0",
     "cpu_id": "M55_HE",
@@ -121,3 +128,9 @@ Use the below json to configure your ATOC. Copy the binaries to the app-release-
 
 # Power Measurement on Alif DevKit
 Refer to the power measurement points described in the [aiPM Examples User Guide](https://github.com/alifsemi/alif_ensemble-vscode-aiPMExamples/blob/main/Documentation/aiPM_Examples.md)
+
+
+# Other Notes
+It is a good idea to mark launch.json and tasks.json as read-only files so that the Arm CMSIS Solution extention does not overwrite these files needlessly.
+
+To erase the application, execute the task "Alif: put chip in maintenance mode and erase".

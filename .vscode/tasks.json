@@ -59,7 +59,35 @@
                     "cp \"$outputBinFilename\" '${config:alif.setools.root}/build/images/${command:cmsis-csolution.getProcessorName}_img.bin';",
                     "cp './.alif/${command:cmsis-csolution.getProcessorName}_cfg.json' '${config:alif.setools.root}/alif-img.json';",
                     "cp './.alif/app-device-config-no-hfxo.json' '${config:alif.setools.root}/build/config/app-device-config-no-hfxo.json';"
-                ]
+                ],
+                "options": {
+                    "shell": {
+                        "executable": "powershell.exe",
+                        "args": [
+                            "-Command"
+                        ]
+                    }
+                }
+            },
+            "linux": {
+                "options": {
+                    "shell": {
+                        "executable": "/bin/bash",
+                        "args": [
+                            "-c"
+                        ]
+                    }
+                }
+            },
+            "osx": {
+                "options": {
+                    "shell": {
+                        "executable": "/bin/bash",
+                        "args": [
+                            "-c"
+                        ]
+                    }
+                }
             },
             "problemMatcher": []
         },
@@ -85,7 +113,35 @@
                     "cp \"$outputBinFilenameHP\" '${config:alif.setools.root}/build/images/M55_HP_img.bin';",
                     "cp './.alif/M55_HP_HE_cfg.json' '${config:alif.setools.root}/alif-img.json';",
                     "cp './.alif/app-device-config-no-hfxo.json' '${config:alif.setools.root}/build/config/app-device-config-no-hfxo.json';"
-                ]
+                ],
+                "options": {
+                    "shell": {
+                        "executable": "powershell.exe",
+                        "args": [
+                            "-Command"
+                        ]
+                    }
+                }
+            },
+            "linux": {
+                "options": {
+                    "shell": {
+                        "executable": "/bin/bash",
+                        "args": [
+                            "-c"
+                        ]
+                    }
+                }
+            },
+            "osx": {
+                "options": {
+                    "shell": {
+                        "executable": "/bin/bash",
+                        "args": [
+                            "-c"
+                        ]
+                    }
+                }
             },
             "problemMatcher": []
         },
