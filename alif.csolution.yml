@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/Open-CMSIS-Pack/devtools/tools/projmgr/2.6.0/tools/projmgr/schemas/csolution.schema.json
 solution:
-  created-for: cmsis-toolbox@2.6.0
+  created-for: CMSIS-Toolbox@2.12.0
   cdefault:
 
   # List of tested compilers that can be selected
@@ -26,10 +26,6 @@ solution:
         - set:
           images:
             - project-context: app_he.release
-          debugger:
-            name: JLink Server
-            port: 3333
-            protocol: swd
 
     - type: E7-HP
       device: Alif Semiconductor::AE722F80F55D5LS:M55_HP
@@ -41,10 +37,6 @@ solution:
         - set:
           images:
             - project-context: app_hp.release
-          debugger:
-            name: JLink Server
-            port: 3333
-            protocol: swd
 
     - type: E1C-HE
       device: Alif Semiconductor::AE1C1F4051920PH:M55_HE
@@ -58,10 +50,6 @@ solution:
         - set:
           images:
             - project-context: app_he.release
-          debugger:
-            name: JLink Server
-            port: 3333
-            protocol: swd
 
     - type: E8-HE
       device: Alif Semiconductor::AE822FA0E5597LS0:M55_HE
@@ -74,10 +62,6 @@ solution:
         - set:
           images:
             - project-context: app_he.release
-          debugger:
-            name: JLink Server
-            port: 3333
-            protocol: swd
 
     - type: E8-HP
       device: Alif Semiconductor::AE822FA0E5597LS0:M55_HP
@@ -90,10 +74,6 @@ solution:
         - set:
           images:
             - project-context: app_hp.release
-          debugger:
-            name: JLink Server
-            port: 3333
-            protocol: swd
 
   build-types:
     - type: debug
