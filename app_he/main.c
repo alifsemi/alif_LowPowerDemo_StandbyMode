@@ -109,7 +109,7 @@ static void boot_from_por()
     runp.cpu_clk_freq = CLOCK_FREQUENCY_76_8_RC_MHZ;
     runp.scaled_clk_freq = SCALED_FREQ_RC_STDBY_0_6_MHZ;
     runp.dcdc_mode = DCDC_MODE_PFM_FORCED;  // PFM is used at low loads
-    runp.dcdc_voltage = 750;
+    runp.dcdc_voltage = 775;
     runp.memory_blocks = MRAM_MASK | BACKUP4K_MASK;
 #if defined(M55_HE)
     runp.memory_blocks |= SRAM4_1_MASK | SRAM4_2_MASK | SRAM5_1_MASK | SRAM5_2_MASK;
