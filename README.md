@@ -126,6 +126,73 @@ To program the binaries manually, use the below json to configure your ATOC. Cop
 ```
 
 
+# GitHub Revision Workflow (Fork-Based)
+This section describes a beginner-friendly workflow to manage revisions and
+pull requests while adding new features, such as HP activity LED indication.
+
+## One-time setup
+1. Fork this repository in GitHub to your own account.
+2. Clone your fork or repoint your local repository to your fork as `origin`.
+3. Add the upstream repository as `upstream` so you can pull later changes.
+
+Example commands (replace placeholders):
+```
+git remote rename origin upstream
+git remote add origin https://github.com/<your-user>/alif_LowPowerDemo_StandbyMode.git
+git remote -v
+```
+
+## Create a baseline branch from current code
+Use a baseline branch before adding features so you can compare each change
+set cleanly.
+
+```
+git checkout -b chore/baseline-import
+git add README.md
+git commit -m "docs: add fork-based GitHub revision workflow"
+git push -u origin chore/baseline-import
+```
+
+Open a PR from `chore/baseline-import` to your fork `main` branch.
+
+## Feature branch workflow (recommended per feature)
+For each feature, create a dedicated branch from your `main`:
+
+```
+git checkout main
+git pull --ff-only origin main
+git checkout -b feature/hp-active-led
+```
+
+Develop, build, and test. Then commit and push:
+
+```
+git add <files>
+git commit -m "feat(app_hp): indicate HP active state with red LED"
+git push -u origin feature/hp-active-led
+```
+
+Open a PR from `feature/hp-active-led` to your fork `main`.
+
+## PR checklist
+- Keep PR scope focused to one behavior change.
+- Include target context used for testing (for example: E8-HP/E8-HE).
+- Include a brief test log and expected behavior evidence.
+- Confirm no unrelated `.vscode` changes are included unless intentional.
+
+## Integrate upstream updates
+Keep your fork up to date between features:
+
+```
+git checkout main
+git fetch upstream
+git merge --ff-only upstream/main
+git push origin main
+```
+
+If fast-forward is not possible, use a normal merge and resolve conflicts.
+
+
 # Power Measurement on Alif DevKit
 Refer to the power measurement points described in the [aiPM Examples User Guide](https://github.com/alifsemi/alif_ensemble-vscode-aiPMExamples/blob/main/Documentation/aiPM_Examples.md)
 
