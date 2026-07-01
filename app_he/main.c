@@ -14,6 +14,7 @@
 #include <drv_bkram.h>
 #include <drv_mhu.h>
 #include <lptimer.h>
+#include <pinconf.h>
 #include <uart.h>
 #include <pm.h>
 
@@ -27,6 +28,10 @@ volatile uint32_t ms_ticks;
 void SysTick_Handler (void) { ms_ticks++; }
 void delay_ms (uint32_t msec) { msec += ms_ticks; while(ms_ticks < msec) __WFI(); }
 extern int32_t get_int_input();
+
+static void uart_init();
+static void uart_update();
+static void uart_deinit();
 
 void LPTIMER0_IRQHandler()
 {
@@ -174,11 +179,10 @@ static void boot_from_standby()
 
 static void enter_standby()
 {
-    delay_ms(5); /* small delay for UART prints to finish */
-
     /* code after this line must be in TCM */
     ANA->VBAT_ANA_REG2 &= ~(1U << 5);    // disable MRAM LDO
 
+    uart_deinit();
     while(1) pm_core_enter_deep_sleep_request_subsys_off();
 }
 
@@ -247,7 +251,7 @@ static bool PrintPendingIRQ()
      * you will see pending IRQs not meant for this core. */
     for (uint32_t i = 0; i < 64; i++) {
         if (NVIC_GetPendingIRQ(i)) {
-            printf("IRQ%u is pending\r\n", i);
+            printf("IRQ%" PRIu32 " is pending\r\n", i);
         }
     }
 
@@ -274,6 +278,20 @@ static void uart_update()
 {
 #if defined(RTE_CMSIS_Compiler_STDIN_Custom) || defined(RTE_CMSIS_Compiler_STDOUT_Custom)
     uart_set_baudrate((UART_Type*)LPUART_BASE, SystemCoreClock, PRINTF_UART_CONSOLE_BAUD_RATE);
+#endif
+}
+
+static void uart_deinit()
+{
+#if defined(RTE_CMSIS_Compiler_STDIN_Custom)
+    pinconf_set(PRINTF_UART_CONSOLE_RX_PORT_NUM, PRINTF_UART_CONSOLE_RX_PIN,
+        0, PADCTRL_DRIVER_DISABLED_PULL_UP);
+#endif
+#if defined(RTE_CMSIS_Compiler_STDOUT_Custom)
+    UART_Type *uart = (UART_Type*)LPUART_BASE;
+    while (!(uart->UART_LSR & UART_LSR_TRANSMITTER_EMPTY));
+    pinconf_set(PRINTF_UART_CONSOLE_TX_PORT_NUM, PRINTF_UART_CONSOLE_TX_PIN,
+        0, PADCTRL_DRIVER_DISABLED_PULL_UP);
 #endif
 }
 
