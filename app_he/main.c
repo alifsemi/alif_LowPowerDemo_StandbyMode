@@ -6,8 +6,6 @@
 #include <RTE_Components.h>
 #include <app_mem_regions.h>
 #include <se_services_port.h>
-#include <retarget_config.h>
-#include <retarget_init.h>
 #include <sys_clocks.h>
 #include <drv_bkram.h>
 #include <drv_mhu.h>
@@ -15,6 +13,11 @@
 #include <pinconf.h>
 #include <uart.h>
 #include <pm.h>
+
+#if defined(RTE_CMSIS_Compiler_STDIN) || defined(RTE_CMSIS_Compiler_STDOUT)
+#include "retarget_init.h"
+#include "retarget_config.h"
+#endif
 
 #define LPT_CH  0
 volatile uint32_t lpt_irq;
@@ -80,6 +83,34 @@ void MHU_RTSS_S_RX_IRQHandler()
     bk_ram_wr(&count, BKRAM_INDEX_HE_RX_CNT);
 }
 
+static bool GetPendingIRQ()
+{
+    uint32_t wic_pending = 0;
+    wic_pending |= NVIC->ISPR[0];
+    wic_pending |= NVIC->ISPR[1];
+
+    /* nothing to do if IRQs 0-63 are clear */
+    if (wic_pending == 0) return false;
+
+    /* For example: only LPTIMER0 should wake the HE core */
+    if (NVIC_GetPendingIRQ(60 + LPT_CH)) {
+        return true;
+    }
+
+    return false;
+}
+
+static void PrintPendingIRQ()
+{
+    /* Note: IRQ lines are shared in this multicore system,
+     * you will see pending IRQs not meant for this core. */
+    for (uint32_t i = 0; i < 64; i++) {
+        if (NVIC_GetPendingIRQ(i)) {
+            printf("IRQ%" PRIu32 " is pending\r\n", i);
+        }
+    }
+}
+
 static void reset_hp()
 {
     *(volatile uint32_t*)0x1A010310 = 3U;
@@ -89,19 +120,6 @@ static void reset_hp()
 
 static void boot_from_por()
 {
-    printf("RTSS-HE first boot\r\n\n");
-    delay_ms(100);
-
-    printf("Wake up period in milliseconds (e.g. 10ms to 10000ms)\r\n");
-    printf("> 1000");
-    int32_t sleep_ms = 1000;//get_int_input();
-
-    printf("\r\nTime spent running while(1) (e.g. 1ms to 1000ms)\r\n");
-    printf("> 100");
-    int32_t active_ms = 100;//get_int_input();
-
-    printf("\r\nStarting Power cycle demo\r\n\n");
-
     /* Initialize the SE services */
     uint32_t ret, response;
     se_services_port_init();
@@ -132,6 +150,28 @@ static void boot_from_por()
     /* turn off DEBUG and SYSTOP */
     *(volatile uint32_t*)0x1A010400 = 0;
 
+    ms_ticks = 0;
+    SystemCoreClock = 76800000;
+    SystemAXIClock = 76800000;
+    SystemAHBClock = SystemAXIClock >> 1;
+    SystemAPBClock = SystemAXIClock >> 2;
+    SystemREFClock = 76800000;
+    SysTick_Config(SystemCoreClock/1000);
+    uart_init();
+
+    printf("RTSS-HE first boot\r\n\n");
+    delay_ms(100);
+
+    printf("Wake up period in milliseconds (e.g. 10ms to 10000ms)\r\n");
+    printf("> 1000");
+    uint32_t sleep_ms = 1000;//get_int_input();
+
+    printf("\r\nTime spent running while(1) (e.g. 1ms to 1000ms)\r\n");
+    printf("> 100");
+    uint32_t active_ms = 100;//get_int_input();
+
+    printf("\r\nStarting Power cycle demo\r\n\n");
+
     /* Clear the Backup RAM */
     uint32_t bk_data = 0;
     for (int i = 0; i < 100; i++) {
@@ -155,12 +195,25 @@ static void boot_from_por()
 
 static void boot_from_standby()
 {
+    /* code prior to this line must be in TCM */
+    ANA->VBAT_ANA_REG2 |= (1U << 5);    // enable MRAM LDO
+
+    ms_ticks = 0;
+    SystemCoreClock = 76800000;
+    SystemAXIClock = 76800000;
+    SystemAHBClock = SystemAXIClock >> 1;
+    SystemAPBClock = SystemAXIClock >> 2;
+    SystemREFClock = 76800000;
+    SysTick_Config(SystemCoreClock/1000);
+    uart_init();
+
     uint32_t cycle_cnt;
     bk_ram_rd(&cycle_cnt, BKRAM_INDEX_HE_CYCLES);
     cycle_cnt++;
     bk_ram_wr(&cycle_cnt, BKRAM_INDEX_HE_CYCLES);
     printf("RTSS-HE resume count: %" PRIu32 "\r\n", cycle_cnt);
 
+    PrintPendingIRQ();
     NVIC_EnableIRQ(41);
     NVIC_EnableIRQ(42);
     NVIC_EnableIRQ(60 + LPT_CH);
@@ -170,17 +223,16 @@ static void boot_from_standby()
     bk_ram_rd(&count2, BKRAM_INDEX_HE_RX_CNT);
     printf("LPTIMER interrupt count: %" PRIu32 "\r\n", count1);
     printf("MHU interrupt count: %" PRIu32 " (RX)\r\n\n", count2);
-
-    /* code prior to this line must be in TCM */
-    ANA->VBAT_ANA_REG2 |= (1U << 5);    // enable MRAM LDO
 }
 
 static void enter_standby()
 {
+    printf("\r\nEntering standby mode\r\n\n");
+    uart_deinit();
+
     /* code after this line must be in TCM */
     ANA->VBAT_ANA_REG2 &= ~(1U << 5);    // disable MRAM LDO
 
-    uart_deinit();
     while(1) pm_core_enter_deep_sleep_request_subsys_off();
 }
 
@@ -236,29 +288,22 @@ static void execute_while1_rtsshp()
 }
 #endif
 
-static bool PrintPendingIRQ()
+int main (void)
 {
-    uint32_t wic_pending = 0;
-    wic_pending |= NVIC->ISPR[0];
-    wic_pending |= NVIC->ISPR[1];
-
-    /* nothing to do if IRQs 0-63 are clear */
-    if (wic_pending == 0) return false;
-
-    /* Note: IRQ lines are shared in this multicore system,
-     * you will see pending IRQs not meant for this core. */
-    for (uint32_t i = 0; i < 64; i++) {
-        if (NVIC_GetPendingIRQ(i)) {
-            printf("IRQ%" PRIu32 " is pending\r\n", i);
-        }
+    bool wake_event = GetPendingIRQ();
+    if (wake_event) {
+        boot_from_standby();
+        execute_while1();
+#ifndef M55_HE_E1C
+        execute_while1_rtsshp();
+#endif
+        enter_standby();
     }
-
-    /* For example: only LPTIMER should wake the HE core */
-    if (NVIC_GetPendingIRQ(60 + LPT_CH)) {
-        return true;
+    else {
+        boot_from_por();
+        enter_standby();
     }
-
-    return false;
+    return 0;
 }
 
 static void uart_init()
@@ -291,30 +336,4 @@ static void uart_deinit()
     pinconf_set(PRINTF_UART_CONSOLE_TX_PORT_NUM, PRINTF_UART_CONSOLE_TX_PIN,
         0, PADCTRL_DRIVER_DISABLED_PULL_UP);
 #endif
-}
-
-int main (void)
-{
-    ms_ticks = 0;
-    SystemCoreClock = 76800000;
-    SystemAXIClock = 76800000;
-    SystemAHBClock = SystemAXIClock >> 1;
-    SystemAPBClock = SystemAXIClock >> 2;
-    SysTick_Config(SystemCoreClock/1000);
-    uart_init();
-
-    bool wake_event = PrintPendingIRQ();
-    if (wake_event) {
-        boot_from_standby();
-        execute_while1();
-#ifndef M55_HE_E1C
-        execute_while1_rtsshp();
-#endif
-        enter_standby();
-    }
-    else {
-        boot_from_por();
-        enter_standby();
-    }
-    return 0;
 }
