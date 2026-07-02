@@ -6,8 +6,6 @@
 #include <RTE_Components.h>
 #include <app_mem_regions.h>
 #include <se_services_port.h>
-#include <retarget_config.h>
-#include <retarget_init.h>
 #include <sys_clocks.h>
 #include <drv_bkram.h>
 #include <drv_mhu.h>
@@ -15,6 +13,13 @@
 #include <pinconf.h>
 #include <uart.h>
 #include <pm.h>
+
+#if defined(RTE_CMSIS_Compiler_STDIN) || defined(RTE_CMSIS_Compiler_STDOUT)
+#define _UART_BASE_(n) UART##n##_BASE
+#define UART_BASE(n) _UART_BASE_(n)
+#include "retarget_init.h"
+#include "retarget_config.h"
+#endif
 
 #define MHU_VAL 0x1234
 volatile uint32_t mhu_rx_value;
@@ -52,20 +57,67 @@ void MHU_RTSS_S_RX_IRQHandler()
     bk_ram_wr(&count, BKRAM_INDEX_HP_RX_CNT);
 }
 
+static bool GetPendingIRQ()
+{
+    uint32_t wic_pending = 0;
+    wic_pending |= NVIC->ISPR[0];
+    wic_pending |= NVIC->ISPR[1];
+
+    /* nothing to do if IRQs 0-63 are clear */
+    if (wic_pending == 0) return false;
+
+    /* For example: only MHU0 RX should wake the HP core */
+    if (NVIC_GetPendingIRQ(41)) {
+        return true;
+    }
+
+    return false;
+}
+
+static void PrintPendingIRQ()
+{
+    /* Note: IRQ lines are shared in this multicore system,
+     * you may see pending IRQs not meant for this core. */
+    for (uint32_t i = 0; i < 64; i++) {
+        if (NVIC_GetPendingIRQ(i)) {
+            printf("IRQ%" PRIu32 " is pending\r\n", i);
+        }
+    }
+}
+
 static void boot_from_por()
 {
+    ms_ticks = 0;
+    SystemCoreClock = 76800000;
+    SystemAXIClock = 76800000;
+    SystemAHBClock = SystemAXIClock >> 1;
+    SystemAPBClock = SystemAXIClock >> 2;
+    SystemREFClock = 76800000;
+    SysTick_Config(SystemCoreClock/1000);
+    uart_init();
+
     printf("RTSS-HP first boot\r\n\n");
     delay_ms(100);
 }
 
 static void boot_from_standby()
 {
+    ms_ticks = 0;
+    SystemCoreClock = 76800000;
+    SystemAXIClock = 76800000;
+    SystemAHBClock = SystemAXIClock >> 1;
+    SystemAPBClock = SystemAXIClock >> 2;
+    SystemREFClock = 76800000;
+    SysTick_Config(SystemCoreClock/1000);
+    uart_init();
+
     uint32_t cycle_cnt;
     bk_ram_rd(&cycle_cnt, BKRAM_INDEX_HP_CYCLES);
     cycle_cnt++;
     bk_ram_wr(&cycle_cnt, BKRAM_INDEX_HP_CYCLES);
     printf("RTSS-HP resume count: %" PRIu32 "\r\n", cycle_cnt);
 
+    PrintPendingIRQ();
     NVIC_EnableIRQ(41);
     NVIC_EnableIRQ(42);
 
@@ -92,29 +144,19 @@ static void execute_while1_rtsshp()
     MHU_SENDER_Set(RTSS_TX_MHU0_BASE, 0, MHU_VAL);
 }
 
-static bool PrintPendingIRQ()
+int main (void)
 {
-    uint32_t wic_pending = 0;
-    wic_pending |= NVIC->ISPR[0];
-    wic_pending |= NVIC->ISPR[1];
-
-    /* nothing to do if IRQs 0-63 are clear */
-    if (wic_pending == 0) return false;
-
-    /* Note: IRQ lines are shared in this multicore system,
-     * you will see pending IRQs not meant for this core. */
-    for (uint32_t i = 0; i < 64; i++) {
-        if (NVIC_GetPendingIRQ(i)) {
-            printf("IRQ%" PRIu32 " is pending\r\n", i);
-        }
+    bool wake_event = GetPendingIRQ();
+    if (wake_event) {
+        boot_from_standby();
+        execute_while1_rtsshp();
+        enter_standby();
     }
-
-    /* For example: only MHU0 RX should wake the HP core */
-    if (NVIC_GetPendingIRQ(41)) {
-        return true;
+    else {
+        boot_from_por();
+        enter_standby();
     }
-
-    return false;
+    return 0;
 }
 
 static void uart_init()
@@ -131,8 +173,6 @@ static void uart_init()
 static void uart_update()
 {
 #if defined(RTE_CMSIS_Compiler_STDIN_Custom) || defined(RTE_CMSIS_Compiler_STDOUT_Custom)
-#define _UART_BASE_(n)      UART##n##_BASE
-#define UART_BASE(n)        _UART_BASE_(n)
     uart_set_baudrate((UART_Type*)UART_BASE(PRINTF_UART_CONSOLE), SystemAPBClock, PRINTF_UART_CONSOLE_BAUD_RATE);
 #endif
 }
@@ -144,34 +184,9 @@ static void uart_deinit()
         0, PADCTRL_DRIVER_DISABLED_PULL_UP);
 #endif
 #if defined(RTE_CMSIS_Compiler_STDOUT_Custom)
-#define _UART_BASE_(n)      UART##n##_BASE
-#define UART_BASE(n)        _UART_BASE_(n)
     UART_Type *uart = (UART_Type*)UART_BASE(PRINTF_UART_CONSOLE);
     while (!(uart->UART_LSR & UART_LSR_TRANSMITTER_EMPTY));
     pinconf_set(PRINTF_UART_CONSOLE_TX_PORT_NUM, PRINTF_UART_CONSOLE_TX_PIN,
         0, PADCTRL_DRIVER_DISABLED_PULL_UP);
 #endif
-}
-
-int main (void)
-{
-    ms_ticks = 0;
-    SystemCoreClock = 76800000;
-    SystemAXIClock = 76800000;
-    SystemAHBClock = SystemAXIClock >> 1;
-    SystemAPBClock = SystemAXIClock >> 2;
-    SysTick_Config(SystemCoreClock/1000);
-    uart_init();
-
-    bool wake_event = PrintPendingIRQ();
-    if (wake_event) {
-        boot_from_standby();
-        execute_while1_rtsshp();
-        enter_standby();
-    }
-    else {
-        boot_from_por();
-        enter_standby();
-    }
-    return 0;
 }
