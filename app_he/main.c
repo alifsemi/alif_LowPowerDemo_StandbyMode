@@ -9,6 +9,7 @@
 #include <sys_clocks.h>
 #include <drv_bkram.h>
 #include <drv_mhu.h>
+#include <soc_clk.h>
 #include <lptimer.h>
 #include <pinconf.h>
 #include <uart.h>
@@ -150,12 +151,11 @@ static void boot_from_por()
     /* turn off DEBUG and SYSTOP */
     *(volatile uint32_t*)0x1A010400 = 0;
 
+    /* get status of clock tree */
+    CoreClockUpdate();
+    SystBusClkUpdate();
+
     ms_ticks = 0;
-    SystemCoreClock = 76800000;
-    SystemAXIClock = 76800000;
-    SystemAHBClock = SystemAXIClock >> 1;
-    SystemAPBClock = SystemAXIClock >> 2;
-    SystemREFClock = 76800000;
     SysTick_Config(SystemCoreClock/1000);
     uart_init();
 
@@ -198,12 +198,11 @@ static void boot_from_standby()
     /* code prior to this line must be in TCM */
     ANA->VBAT_ANA_REG2 |= (1U << 5);    // enable MRAM LDO
 
+    /* get status of clock tree */
+    CoreClockUpdate();
+    SystBusClkUpdate();
+
     ms_ticks = 0;
-    SystemCoreClock = 76800000;
-    SystemAXIClock = 76800000;
-    SystemAHBClock = SystemAXIClock >> 1;
-    SystemAPBClock = SystemAXIClock >> 2;
-    SystemREFClock = 76800000;
     SysTick_Config(SystemCoreClock/1000);
     uart_init();
 

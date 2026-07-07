@@ -10,3 +10,4 @@ layer:
       files:
         - file: drv_bkram.c
         - file: drv_mhu.c
+        - file: soc_clk.c
