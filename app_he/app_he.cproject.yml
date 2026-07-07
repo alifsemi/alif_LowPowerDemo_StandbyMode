@@ -5,10 +5,6 @@ project:
       files:
         - file: main.c
         - file: get_int_input.c
-    - group: Drv
-      files:
-        - file: ../app_common/drv_bkram.c
-        - file: ../app_common/drv_mhu.c
 
   add-path:
     - ../app_common
@@ -24,6 +20,7 @@ project:
 
   layers:
     - layer: ../device/ensemble/alif-ensemble.clayer.yml
+    - layer: ../libs/drv/drv.clayer.yaml
 
   packs:
     - pack: AlifSemiconductor::Ensemble@2.1.0
