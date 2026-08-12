@@ -20,6 +20,7 @@ project:
 
   layers:
     - layer: ../device/ensemble/alif-ensemble.clayer.yml
+    - layer: ../device/ensemble/alif-stdio.clayer.yml
     - layer: ../libs/drv/drv.clayer.yaml
 
   packs:

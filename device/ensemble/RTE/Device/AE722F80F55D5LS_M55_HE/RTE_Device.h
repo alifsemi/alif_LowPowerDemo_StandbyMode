@@ -9669,7 +9669,7 @@
 //     <1=> Enable
 // <i> define Handle Spurious Wakeup
 // <i> default: Enable
-#define PM_HANDLE_SPURIOUS_WAKEUP 1
+#define PM_HANDLE_SPURIOUS_WAKEUP 0
 // </h> Power Management (PM)
 
 #endif /* __RTE_DEVICE_H */

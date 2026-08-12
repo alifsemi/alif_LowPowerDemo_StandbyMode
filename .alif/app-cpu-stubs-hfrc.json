@@ -9,7 +9,7 @@
         "disabled": true,
         "binary": "a32_stub_0.bin",
         "version" : "1.0.0",
-        "signed": false,
+        "signed": true,
         "loadAddress": "0x02000000",
         "cpu_id": "A32_0",
         "flags": ["load","boot"]

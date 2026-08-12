@@ -3716,7 +3716,7 @@
 //    <1=> DMA0
 // <i> Defines Select DMA0 for UART4. By default DMA0 will be considered.
 // <i> Default: DMA0
-#define RTE_UART4_SELECT_DMA0          1
+#define RTE_UART4_SELECT_DMA0          0
 
 // <o> UART4 DMA IRQ priority <0-255>
 // <i> Defines UART4 DMA Interrupt priority
