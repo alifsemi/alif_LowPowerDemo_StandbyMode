@@ -23,12 +23,5 @@ project:
     - layer: ../libs/drv/drv.clayer.yaml
 
   packs:
-    - pack: AlifSemiconductor::Ensemble@2.1.0
-    - pack: ARM::CMSIS-Compiler@^2.0.0
-    - pack: ARM::CMSIS
-  components:
-    - component: CMSIS-Compiler:CORE
-    - component: CMSIS-Compiler:STDIN:Custom
-    - component: CMSIS-Compiler:STDOUT:Custom
-    - component: Services:Retarget IO:STDIN
-    - component: Services:Retarget IO:STDOUT
+    - pack: AlifSemiconductor::Ensemble@2.2.0
+    - pack: ARM::CMSIS@^6.0.0
