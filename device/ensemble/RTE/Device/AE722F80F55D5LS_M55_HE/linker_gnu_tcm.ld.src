@@ -93,7 +93,6 @@ SECTIONS
   .data.at_dtcm : ALIGN(8)
   {
     *(vtable)
-    *(.data)
     *(.data*)
 
     KEEP(*(.jcr*))
@@ -105,8 +104,7 @@ SECTIONS
 
   .bss.dtcm_noinit (NOLOAD) : ALIGN(8)
   {
-    *(.bss.noinit)
-    *(.bss.noinit.*)
+    *(.bss.noinit*)
   } > DTCM
 
 #if __HAS_BULK_SRAM
@@ -122,8 +120,7 @@ SECTIONS
   .bss (NOLOAD) : ALIGN(8)
   {
     __bss_start__ = .;
-    *(.bss)
-    *(.bss.*)
+    *(.bss*)
     *(COMMON)
 
     . = ALIGN(8);

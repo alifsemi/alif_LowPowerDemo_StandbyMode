@@ -93,7 +93,6 @@ SECTIONS
   .data.at_dtcm : ALIGN(8)
   {
     *(vtable)
-    *(.data)
     *(.data*)
 
     KEEP(*(.jcr*))
@@ -112,8 +111,7 @@ SECTIONS
   .bss (NOLOAD) : ALIGN(8)
   {
     __bss_start__ = .;
-    *(.bss)
-    *(.bss.*)
+    *(.bss*)
     *(COMMON)
 
     . = ALIGN(8);
